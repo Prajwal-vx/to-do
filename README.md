@@ -23,7 +23,7 @@ This is a static Vite app; no server-side runtime or environment variables are r
 
 The app stores workspace data in each browser's local IndexedDB. Its sign-in is a device-local gate with a salted, PBKDF2 password hash; it is not a hosted identity system and does not sync accounts or data between devices. Clearing browser site data removes the local account and workspace. Use the built-in backup and restore tools to move workspace data between devices.
 
-The installable PWA supports modern browsers on Windows, iOS, and Android. Features that depend on browser support (such as system notifications) fall back to in-app reminders.
+TaskFlow runs directly in modern browsers on phones, tablets, and computers; no app installation is required. After the first online visit, the service worker caches the app shell and static assets for offline use. Deploy it over HTTPS for service-worker support on other devices (`localhost` is supported for development). Workspace data and accounts are stored separately in each browser's local IndexedDB; use the built-in backup and restore tools to move data between devices. Features that depend on browser support (such as system notifications) fall back to in-app reminders.
 
 ## Project map
 

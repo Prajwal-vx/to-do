@@ -11,11 +11,13 @@ import {
   ReadingItem,
   SavedFilter,
   Task,
+  TaskLink,
   TaskTemplate,
   UserSettings,
   Workspace,
 } from '../types/todo';
 import { decryptBackupString, encryptBackupString } from './crypto';
+import { normalizeExternalUrl } from './safeUrl';
 
 export interface WorkspaceBackup {
   version: number;
@@ -41,6 +43,39 @@ export interface ProjectSharePackage {
   exportedAt: string;
   project: Project;
   tasks: Task[];
+}
+
+function validateImportedTaskLinks(tasks: unknown[], source: string): Task[] {
+  return tasks.map((value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      throw new Error(`Invalid ${source}: a task is malformed.`);
+    }
+
+    const task = value as Record<string, unknown>;
+    if (!Array.isArray(task.links)) {
+      throw new Error(`Invalid ${source}: a task has an invalid links list.`);
+    }
+
+    const links: TaskLink[] = task.links.map((value): TaskLink => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error(`Invalid ${source}: a task link is malformed.`);
+      }
+
+      const link = value as Record<string, unknown>;
+      if (typeof link.url !== 'string') {
+        throw new Error(`Invalid ${source}: a task link URL is missing.`);
+      }
+
+      const url = normalizeExternalUrl(link.url);
+      if (!url) {
+        throw new Error(`Invalid ${source}: task links must use valid HTTP or HTTPS URLs.`);
+      }
+
+      return { ...link, url } as TaskLink;
+    });
+
+    return { ...task, links } as Task;
+  });
 }
 
 function downloadBlob(filename: string, content: string, mimeType: string) {
@@ -99,7 +134,10 @@ export function parseProjectSharePackage(jsonText: string): ProjectSharePackage 
   if (!parsed || parsed.packageType !== 'to-do-project-share' || !parsed.project || !Array.isArray(parsed.tasks)) {
     throw new Error('Invalid TO-DO project sharing package.');
   }
-  return parsed as ProjectSharePackage;
+  return {
+    ...parsed,
+    tasks: validateImportedTaskLinks(parsed.tasks, 'TO-DO project sharing package'),
+  } as ProjectSharePackage;
 }
 
 export function exportTasksCSV(tasks: Task[], projects: Project[]) {
@@ -415,7 +453,7 @@ export async function parseWorkspaceBackupMaybeEncrypted(
     version: Number(payload.version) || 2,
     exportedAt: String(payload.exportedAt || new Date().toISOString()),
     workspaces: Array.isArray(payload.workspaces) ? payload.workspaces : [],
-    tasks: payload.tasks,
+    tasks: validateImportedTaskLinks(payload.tasks, 'TO-DO backup file'),
     projects: Array.isArray(payload.projects) ? payload.projects : [],
     folders: Array.isArray(payload.folders) ? payload.folders : [],
     habits: Array.isArray(payload.habits) ? payload.habits : [],

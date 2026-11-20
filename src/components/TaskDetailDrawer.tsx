@@ -29,6 +29,7 @@ import {
   TaskStatus,
 } from '../types/todo';
 import { addDays, formatTimerSeconds, getTodayStr } from '../utils/date';
+import { normalizeAttachmentDataUrl, normalizeExternalUrl } from '../utils/safeUrl';
 
 interface TaskDetailDrawerProps {
   task: Task | null;
@@ -67,6 +68,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const [newTag, setNewTag] = useState('');
   const [newLinkLabel, setNewLinkLabel] = useState('');
   const [newLinkUrl, setNewLinkUrl] = useState('');
+  const [linkError, setLinkError] = useState('');
   const [depToAdd, setDepToAdd] = useState('');
   const [newReminderInput, setNewReminderInput] = useState('');
   const [newComment, setNewComment] = useState('');
@@ -127,7 +129,16 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const handleAddLink = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLinkUrl.trim()) return;
-    const url = newLinkUrl.startsWith('http') ? newLinkUrl.trim() : `https://${newLinkUrl.trim()}`;
+    const trimmedUrl = newLinkUrl.trim();
+    const candidateUrl = /^[a-z][a-z\d+.-]*:/i.test(trimmedUrl)
+      ? trimmedUrl
+      : `https://${trimmedUrl}`;
+    const url = normalizeExternalUrl(candidateUrl);
+    if (!url) {
+      setLinkError('Enter a valid HTTP or HTTPS URL.');
+      return;
+    }
+    setLinkError('');
     patch({
       links: [
         ...task.links,
@@ -932,26 +943,36 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
               <Link2 className="w-3.5 h-3.5" />
               <span>Links & Local Attachments</span>
             </h3>
-            {task.links.map((lnk) => (
-              <div key={lnk.id} className="flex items-center justify-between text-xs gap-2">
-                <a
-                  href={lnk.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 accent-text hover:underline truncate"
-                >
-                  <ExternalLink className="w-3 h-3 shrink-0" />
-                  <span className="truncate">{lnk.label}</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => patch({ links: task.links.filter((l) => l.id !== lnk.id) })}
-                  className="text-slate-400 hover:text-red-600 shrink-0"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
+            {task.links.map((lnk) => {
+              const safeUrl = normalizeExternalUrl(lnk.url);
+              return (
+                <div key={lnk.id} className="flex items-center justify-between text-xs gap-2">
+                  {safeUrl ? (
+                    <a
+                      href={safeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 accent-text hover:underline truncate"
+                    >
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{lnk.label}</span>
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-slate-500 truncate" title="This link is invalid and cannot be opened.">
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{lnk.label} (invalid link)</span>
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => patch({ links: task.links.filter((l) => l.id !== lnk.id) })}
+                    className="text-slate-400 hover:text-red-600 shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
             <form onSubmit={handleAddLink} className="grid grid-cols-1 sm:grid-cols-5 gap-2">
               <input
                 type="text"
@@ -964,6 +985,8 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
                 type="text"
                 value={newLinkUrl}
                 onChange={(e) => setNewLinkUrl(e.target.value)}
+                aria-invalid={Boolean(linkError)}
+                aria-describedby={linkError ? 'task-link-error' : undefined}
                 placeholder="https://..."
                 className="sm:col-span-2 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-white/15 bg-white/70 dark:bg-slate-900/70"
               />
@@ -974,6 +997,11 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
                 <Plus className="w-3.5 h-3.5" />
                 <span>Link</span>
               </button>
+              {linkError && (
+                <p id="task-link-error" className="sm:col-span-5 text-xs text-red-600 dark:text-red-400" role="alert">
+                  {linkError}
+                </p>
+              )}
             </form>
 
             <div className="flex items-center justify-between pt-1">
@@ -986,28 +1014,43 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
                 <input type="file" onChange={handleFileUpload} className="hidden" />
               </label>
             </div>
-            {task.attachments.map((att) => (
-              <div
-                key={att.id}
-                className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg border border-slate-200/70 dark:border-white/10"
-              >
-                <span className="truncate">
-                  {att.name} ({Math.max(1, Math.round(att.size / 1024))} KB)
-                </span>
-                <div className="flex items-center gap-2 shrink-0">
-                  <a href={att.dataUrl} download={att.name} className="text-slate-500 hover:text-slate-900 dark:hover:text-white">
-                    <Download className="w-3.5 h-3.5" />
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => patch({ attachments: task.attachments.filter((a) => a.id !== att.id) })}
-                    className="text-slate-400 hover:text-red-600"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
+            {task.attachments.map((att) => {
+              const safeDataUrl = normalizeAttachmentDataUrl(att.dataUrl);
+              return (
+                <div
+                  key={att.id}
+                  className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg border border-slate-200/70 dark:border-white/10"
+                >
+                  <span className="truncate">
+                    {att.name} ({Math.max(1, Math.round(att.size / 1024))} KB)
+                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {safeDataUrl ? (
+                      <a
+                        href={safeDataUrl}
+                        download={att.name}
+                        aria-label={`Download ${att.name}`}
+                        className="text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      <span title="This attachment cannot be downloaded because its data is invalid.">
+                        <Download className="w-3.5 h-3.5 text-slate-400" />
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => patch({ attachments: task.attachments.filter((a) => a.id !== att.id) })}
+                      aria-label={`Remove ${att.name}`}
+                      className="text-slate-400 hover:text-red-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Comments & Activity Log */}

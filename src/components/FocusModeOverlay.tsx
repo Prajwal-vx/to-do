@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Project, Task, UserSettings } from '../types/todo';
 import { formatDuration, formatTimerSeconds } from '../utils/date';
+import { normalizeExternalUrl } from '../utils/safeUrl';
 import { playGentleChime } from '../utils/sound';
 
 interface FocusModeOverlayProps {
@@ -266,18 +267,26 @@ export const FocusModeOverlay: React.FC<FocusModeOverlayProps> = ({
 
               {task.links.length > 0 && (
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 text-xs">
-                  {task.links.map((lnk) => (
-                    <a
-                      key={lnk.id}
-                      href={lnk.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 accent-text hover:underline"
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                      <span>{lnk.label}</span>
-                    </a>
-                  ))}
+                  {task.links.map((lnk) => {
+                    const safeUrl = normalizeExternalUrl(lnk.url);
+                    return safeUrl ? (
+                      <a
+                        key={lnk.id}
+                        href={safeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 accent-text hover:underline"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span>{lnk.label}</span>
+                      </a>
+                    ) : (
+                      <span key={lnk.id} className="inline-flex items-center gap-1 text-slate-500" title="This link is invalid and cannot be opened.">
+                        <ExternalLink className="w-3 h-3" />
+                        <span>{lnk.label} (invalid link)</span>
+                      </span>
+                    );
+                  })}
                 </div>
               )}
 

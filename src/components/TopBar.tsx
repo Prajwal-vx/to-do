@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { LanguageCode } from '../types/todo';
 import { tLabel } from '../utils/i18n';
-import { PWAInstallButton } from './PWAInstallButton';
 
 interface TopBarProps {
   title: string;
@@ -103,8 +102,6 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span>Undo</span>
           </button>
         )}
-
-        <PWAInstallButton compact />
 
         <button
           type="button"
