@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-label="Mountain landscape">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d8e6fa"/>
+      <stop offset=".58" stop-color="#eef4ff"/>
+      <stop offset="1" stop-color="#a9bfd8"/>
+    </linearGradient>
+    <linearGradient id="far" x1=".2" y1="0" x2=".8" y2="1">
+      <stop offset="0" stop-color="#91add0"/>
+      <stop offset="1" stop-color="#6481a8"/>
+    </linearGradient>
+    <linearGradient id="snow" x1=".5" y1="0" x2=".5" y2="1">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#cbdbea"/>
+    </linearGradient>
+    <linearGradient id="forest" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#557a94"/>
+      <stop offset="1" stop-color="#2c4d62"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="260" fill="url(#sky)"/>
+  <path d="M0 204L94 151l72 30 80-74 93 79 85-112 86 53 79-39 91 88 82-54 138 82v56H0z" fill="url(#far)" opacity=".62"/>
+  <path d="M424 186l127-143 68 78 41-43 72 72 38-38 130 98v50H324z" fill="#7693b5"/>
+  <path d="M551 43l68 78-32-13-22 13-18-25-25 8z" fill="url(#snow)"/>
+  <path d="M509 99l42-56 24 28-22-8-17 23-13-1z" fill="#edf5ff"/>
+  <path d="M660 121l41-43 28 28-19-5-12 13-18-6z" fill="#edf4fb"/>
+  <path d="M0 207l84-54 67 45 75-31 73 50 89-34 95 43 92-28 83 22 94-42 148 58v24H0z" fill="#91a6bf"/>
+  <path d="M0 232c95-42 151-24 222-7 77 19 142-20 218-8 93 14 155 31 248-2 80-29 143-21 212 4v41H0z" fill="#c7d5e2"/>
+  <g fill="url(#forest)">
+    <path d="M32 226l14-35 14 35h-9l13 34H28l13-34z"/>
+    <path d="M74 228l11-28 12 28h-7l10 28H71l10-28z"/>
+    <path d="M692 226l12-32 13 32h-8l12 34h-35l12-34z"/>
+    <path d="M734 224l15-39 15 39h-9l14 38h-40l14-38z"/>
+    <path d="M782 229l11-30 12 30h-7l11 31h-33l11-31z"/>
+  </g>
+  <rect y="248" width="900" height="12" fill="#ecf3f7"/>
+</svg>

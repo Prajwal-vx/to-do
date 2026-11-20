@@ -1,0 +1,6 @@
+{
+  "name": "TO-DO",
+  "description": "Local-first personal productivity workspace. Capture Everything. Prioritize What Matters. Focus on One Thing. Finish More.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
