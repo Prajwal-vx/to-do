@@ -18,6 +18,8 @@ interface TopBarProps {
   title: string;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  mobileSearchOpen: boolean;
+  onToggleMobileSearch: () => void;
   onOpenMobileSidebar: () => void;
   onOpenQuickCapture: () => void;
   onStartFocusMode: () => void;
@@ -35,6 +37,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   title,
   searchQuery,
   onSearchChange,
+  mobileSearchOpen,
+  onToggleMobileSearch,
   onOpenMobileSidebar,
   onOpenQuickCapture,
   onStartFocusMode,
@@ -69,10 +73,11 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className="relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
-            ref={searchInputRef}
+            ref={mobileSearchOpen ? null : searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
+            aria-label="Search tasks"
             placeholder={tLabel(language, 'searchPlaceholder')}
             className="w-full pl-9 pr-8 py-1.5 text-xs sm:text-sm rounded-lg border border-slate-200/80 dark:border-white/10 bg-white/60 dark:bg-white/5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:bg-white/90 dark:focus:bg-white/10 transition-colors"
           />
@@ -88,6 +93,47 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={onToggleMobileSearch}
+        aria-label={mobileSearchOpen ? 'Close search' : 'Search tasks'}
+        aria-expanded={mobileSearchOpen}
+        className="topbar-mobile-search-button md:hidden p-2 text-slate-500 hover:text-slate-900 hover:bg-white/60 rounded-lg shrink-0"
+      >
+        {mobileSearchOpen ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+      </button>
+
+      {mobileSearchOpen && (
+        <div className="topbar-mobile-search md:hidden">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              ref={mobileSearchOpen ? searchInputRef : null}
+              autoFocus
+              type="search"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') onToggleMobileSearch();
+              }}
+              placeholder={tLabel(language, 'searchPlaceholder')}
+              aria-label="Search tasks"
+              className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange('')}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Right: Functional Controls */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -158,7 +204,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           type="button"
           onClick={onOpenQuickCapture}
           aria-label={tLabel(language, 'quickCapture')}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg accent-bg transition-colors whitespace-nowrap shrink-0 shadow-xs"
+          className="topbar-quick-capture inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg accent-bg transition-colors whitespace-nowrap shrink-0 shadow-xs"
         >
           <Plus className="w-4 h-4" />
           <span>{tLabel(language, 'quickCapture')}</span>

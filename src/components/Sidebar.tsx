@@ -155,6 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <button
             type="button"
+            aria-current={isActive ? 'page' : undefined}
             onClick={() => {
               onSelectView('project', project.id, null);
               onCloseMobile();
@@ -217,7 +218,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center gap-1">
           <select
             value={selectedWorkspaceId}
-            onChange={(e) => onSelectWorkspace(e.target.value)}
+            onChange={(e) => {
+              onSelectWorkspace(e.target.value);
+              onCloseMobile();
+            }}
             aria-label="Select workspace"
             className="flex-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-800 dark:text-slate-100 focus:outline-none"
           >
@@ -266,21 +270,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Scrollable Navigation */}
-      <div className="sidebar-navigation flex-1 overflow-y-auto px-2.5 py-3 space-y-4">
+      <nav aria-label="Main navigation" className="sidebar-navigation flex-1 overflow-y-auto px-2.5 py-3 space-y-4">
         <div className="sidebar-main-links space-y-1">
           {(
             [
               ['home', 'Home', House, null],
               ['today', 'Today', CalendarCheck2, todayCount],
               ['upcoming', 'Upcoming', Calendar, upcomingCount],
-              ['favorites', 'Important', Star, favCount],
+              ['favorites', tLabel(language, 'favorites'), Star, favCount],
               ['completed', 'Completed', CheckCircle2, completedCount],
-              ['archive', 'Trash', Trash2, archiveTrashCount],
+              ['archive', tLabel(language, 'archive'), Trash2, archiveTrashCount],
             ] as const
           ).map(([viewKey, label, Icon, count]) => (
             <button
               key={viewKey}
               type="button"
+              aria-current={activeView === viewKey ? 'page' : undefined}
               onClick={() => {
                 onSelectView(viewKey);
                 onCloseMobile();
@@ -316,6 +321,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={viewKey}
                   type="button"
+                  aria-current={activeView === viewKey ? 'page' : undefined}
                   onClick={() => {
                     onSelectView(viewKey);
                     onCloseMobile();
@@ -350,6 +356,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={viewKey as string}
                 type="button"
+                aria-current={activeView === viewKey ? 'page' : undefined}
                 onClick={() => {
                   onSelectView(viewKey as ViewType);
                   onCloseMobile();
@@ -394,6 +401,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <div key={flt.id} className="group flex items-center gap-1">
                     <button
                       type="button"
+                      aria-current={isActive ? 'page' : undefined}
                       onClick={() => {
                         onSelectView('saved_filter', null, flt.id);
                         onCloseMobile();
@@ -612,7 +620,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
         </div>
-      </div>
+      </nav>
 
       {/* Footer */}
       <div className="p-2.5 border-t border-slate-200/60 dark:border-white/10 space-y-0.5 shrink-0">

@@ -16,6 +16,7 @@ import { getTodayStr } from '../utils/date';
 interface DashboardPanelsProps {
   tasks: Task[];
   onOpenCalendar: () => void;
+  onOpenInsights: () => void;
 }
 
 interface DashboardWelcomeProps {
@@ -110,6 +111,7 @@ export const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ tasks, profi
 export const DashboardPanels: React.FC<DashboardPanelsProps> = ({
   tasks,
   onOpenCalendar,
+  onOpenInsights,
 }) => {
   const activeCount = tasks.filter(
     (task) => task.status === 'todo' || task.status === 'in_progress'
@@ -176,7 +178,7 @@ export const DashboardPanels: React.FC<DashboardPanelsProps> = ({
           <span>
             <Activity size={17} /> Quick stats
           </span>
-          <button type="button" className="quick-view-link">View details <ArrowRight size={13} /></button>
+          <button type="button" onClick={onOpenInsights} className="quick-view-link">View details <ArrowRight size={13} /></button>
         </div>
         <div className="quick-stats-body">
           <div

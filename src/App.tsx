@@ -5,6 +5,7 @@ import { DashboardPanels, DashboardWelcome } from './components/DashboardPanels'
 import { FocusModeOverlay } from './components/FocusModeOverlay';
 import { LockScreen } from './components/LockScreen';
 import { LoginPage } from './components/LoginPage';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { OnboardingModal } from './components/OnboardingModal';
 import { QuickCaptureModal } from './components/QuickCaptureModal';
@@ -170,6 +171,7 @@ function WorkspaceApp({ onSignOut, initialProfile }: WorkspaceAppProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedSavedFilterId, setSelectedSavedFilterId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
@@ -1772,6 +1774,8 @@ function WorkspaceApp({ onSignOut, initialProfile }: WorkspaceAppProps) {
           title={viewTitle}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          mobileSearchOpen={mobileSearchOpen}
+          onToggleMobileSearch={() => setMobileSearchOpen((open) => !open)}
           onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
           onOpenQuickCapture={() => setQuickCaptureOpen(true)}
           onStartFocusMode={() => handleStartFocus()}
@@ -1827,7 +1831,11 @@ function WorkspaceApp({ onSignOut, initialProfile }: WorkspaceAppProps) {
                   onBulkAction={handleBulkAction}
                 />
               </div>
-              <DashboardPanels tasks={wsTasks} onOpenCalendar={() => setActiveView('calendar')} />
+              <DashboardPanels
+                tasks={wsTasks}
+                onOpenCalendar={() => setActiveView('calendar')}
+                onOpenInsights={() => setActiveView('insights')}
+              />
             </div>
           )}
 
@@ -2022,6 +2030,29 @@ function WorkspaceApp({ onSignOut, initialProfile }: WorkspaceAppProps) {
           </Suspense>
         </main>
       </div>
+
+      <MobileBottomNav
+        activeView={activeView}
+        searchOpen={mobileSearchOpen}
+        onSelectView={(view) => {
+          setActiveView(view);
+          setSelectedProjectId(null);
+          setSelectedSavedFilterId(null);
+          setMobileSearchOpen(false);
+        }}
+        onToggleSearch={() => {
+          setMobileSearchOpen((open) => !open);
+          setMobileSidebarOpen(false);
+        }}
+        onQuickCapture={() => {
+          setMobileSearchOpen(false);
+          setQuickCaptureOpen(true);
+        }}
+        onOpenMenu={() => {
+          setMobileSearchOpen(false);
+          setMobileSidebarOpen(true);
+        }}
+      />
 
       {/* Drawers & Modals */}
       <QuickCaptureModal
